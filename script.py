@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+import sys
 from collections import defaultdict
 from prometheus_client import start_http_server, Gauge, Info
 import requests
@@ -38,7 +39,9 @@ def fetch_server_data():
     return []
 
 def update_metrics():
+    global active_servers
     server_data = fetch_server_data()
+    new_active_servers = set()  # To track the currently active servers
     total_players = 0  # Initialize total players counter
     total_max_players = 0  # Initialize total max players counter
     server_map_players = defaultdict(int)  # Initialize dictionary to track players per server map
@@ -46,6 +49,8 @@ def update_metrics():
         sname = server.get('sname')
         if SERVER_NAME_FILTER not in sname:
             continue
+
+        new_active_servers.add(sname)  # Add to active servers set
         
         players = int(server.get('players'))
         total_players += players  # Add players to total players counter
@@ -67,7 +72,15 @@ def update_metrics():
         if LOGGING:
             logging.info(f"{sname} - {players_list} - Players: {players} - Max Players: {max_players}")
 
+    # Remove metrics for servers that are no longer active
+    stale_servers = active_servers - new_active_servers
+    for stale_server in stale_servers:
+        server_players_metric.remove(stale_server)
+        server_max_players_metric.remove(stale_server)
+        server_name_metric.remove(stale_server)
 
+    # Update the set of active servers
+    active_servers = new_active_servers
 
     # Set the total players metric
     total_players_metric.set(total_players)
@@ -80,6 +93,9 @@ def update_metrics():
         server_map_players_metric.labels(map_name).set(map_players)
 
 if __name__ == '__main__':
+    # Track active servers
+    active_servers = set()
+
     # Define Prometheus metrics
     server_name_metric = Info('beammp_server_name', 'Name of BeamMP servers', ['sname'])
     server_players_metric = Gauge('beammp_server_players', 'Number of players on BeamMP servers', ['sname'])

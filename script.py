@@ -11,7 +11,7 @@ LOGGING = os.getenv('LOGGING', 'true').lower() == 'true'
 
 # Configure logging if enabled
 if LOGGING:
-    logging.basicConfig(level=logging.INFO, filename='/var/log/beammp/beammp_players.log', format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(asctime)s - %(levelname)s - %(message)s')
     logging.info("Logging enabled.")
 else:
     logging.disable(logging.CRITICAL)  # Disable logging if not enabled

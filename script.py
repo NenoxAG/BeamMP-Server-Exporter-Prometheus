@@ -115,6 +115,7 @@ if __name__ == '__main__':
     
     # Update metrics and log player information every 60 seconds
     while True:
+        logging.info("Starting player information update.")
         update_metrics()
         logging.info("Player information updated.")
         time.sleep(60)  # Updated interval to 60 seconds

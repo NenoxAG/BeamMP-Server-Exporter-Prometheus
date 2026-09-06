@@ -35,10 +35,10 @@ SERVER_NAME_FILTER = os.getenv('SERVER_NAME_FILTER')
 logging.info(f"SERVER_NAME_FILTER: {SERVER_NAME_FILTER}")
 
 def fetch_server_data():
-    url = "https://backend.beammp.com/servers"
+    url = "https://backend.beammp.com/servers-info"
     headers = {"User-Agent": f"BeamMP-Server-Exporter/{VERSION}"}
     try:
-        response = requests.post(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=20)
         response.raise_for_status()  # Raise exception for 4xx or 5xx status codes
         return response.json()
     except requests.exceptions.HTTPError as http_err:
